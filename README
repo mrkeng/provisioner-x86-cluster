@@ -1,0 +1,5 @@
+This repo is a complex set of examples for system automation with Ansible. It will show a complete model of automated system provisioning using the Ansible frameworks. It's written in modular structure for ease of maintenance.
+
+This system provisioning tool also implements the changes being noted in my FHS v3.0 draft proposal.
+
+Adjutant, the chatbot, will use this tool along with nlp-analyzer and several other tools to demonstrate a basic system provisioning via English.
