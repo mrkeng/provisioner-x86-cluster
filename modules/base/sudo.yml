@@ -1,0 +1,2 @@
+- name: Ensure sudo configuration is correct
+  action: copy src={{ ansible_dir }}/config/{{ common_env }}/base/sudo/sudoers dest=/etc/sudoers owner=root group=root mode=0440

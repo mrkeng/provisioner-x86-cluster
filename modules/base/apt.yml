@@ -1,0 +1,57 @@
+- name: Ensure /etc/apt/sources.list is correct
+  action: copy src={{ ansible_dir }}/config/{{ common_env }}/base/apt/sources.list dest=/etc/apt/sources.list owner=root group=root mode=0644
+
+- name: Ensure /etc/apt/apt.conf
+  action: copy src={{ ansible_dir }}/config/{{ common_env }}/base/apt/apt.conf dest=/etc/apt/apt.conf owner=root group=root mode=0644
+
+- name: Install basic system tools
+  action: apt pkg={{ item }} update_cache=yes state=latest
+  with_items:
+    - bash-completion
+    - debianutils
+    - htop
+    - iotop
+    - lsof
+    - ltrace
+    - mlocate
+    - most
+    - ncdu
+    - openssl
+    - screen
+    - strace
+    - sudo
+    - sysstat
+    - tmux
+
+- name: Install basic development tools
+  action: apt pkg={{ item }} state=latest
+  with_items:
+    - build-essential
+    - colordiff
+    - diffutils
+    - git
+    - postgresql-server-dev-9.1
+    - python2.7
+    - python-dev
+    - python-pip
+    - subversion
+
+- name: Install basic network tools
+  action: apt pkg={{ item }} state=latest
+  with_items:
+    - curl
+    - fail2ban
+    - iptables
+    - jwhois
+    - mtr
+    - netcat-openbsd
+    - nmap
+    - ntp
+    - ntpdate
+    - openssh-client
+    - openssh-server
+    - rsync
+    - tcpdump
+    - telnet
+    - traceroute
+    - wget

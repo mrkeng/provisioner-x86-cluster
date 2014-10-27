@@ -1,0 +1,14 @@
+- name: Ensure directory /etc/opt/ exists
+  action: file state=directory owner=adjutant group=devops mode=0755 path=/etc/opt
+
+- name: Ensure directory /opt/local exists
+  action: file state=directory owner=adjutant group=devops mode=0755 path=/opt/local
+
+- name: Ensure directory /var/log/swarm exists
+  action: file state=directory owner=adjutant group=devops mode=0770 path=/var/log/adn
+
+- name: Ensure directory /tmp/src exists
+  action: file state=directory owner=adjutant group=devops mode=0777 path=/tmp/src
+
+- name: Ensure directory /opt/scripts exists
+  action: file state=directory owner=adjutant group=devops mode=0755 path=/opt/scripts

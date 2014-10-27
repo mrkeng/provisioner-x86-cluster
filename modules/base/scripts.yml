@@ -1,0 +1,4 @@
+- name: Deploy generic tools in /opt/scripts
+  action: copy src={{ ansible_dir }}/config/{{ common_env }}/base/{{ item }} dest=/opt/scripts/ owner=root group=root mode=0755
+  with_items:
+    - solo

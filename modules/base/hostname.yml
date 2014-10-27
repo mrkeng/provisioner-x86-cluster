@@ -1,0 +1,40 @@
+- name: Ensure /etc/hostname is correct
+  action: template src={{ ansible_dir }}/config/{{ common_env }}/base/hostname/hostname dest=/etc/hostname
+
+- name: Set hostname
+  action: command hostname {{ inventory_hostname }}
+  register: hostname_status
+
+- name: Ensure /etc/hosts is correct
+  action: template src={{ ansible_dir }}/config/{{ common_env }}/base/hostname/hosts dest=/etc/hosts
+
+- name: Ensure /etc/resolv.conf is correct
+  action: copy src={{ ansible_dir }}/config/{{ common_env }}/base/hostname/resolv.conf dest=/etc/resolv.conf owner=root group=root mode=644
+
+- name: Setup DNS updater - Install dependencies
+  action: apt pkg={{ item }} update_cache=yes state=latest
+  with_items:
+    - python-pip
+    - ec2-api-tools
+    - build-essential
+
+- name: Setup DNS updater - Install cli53
+  action: pip name=cli53 state=latest
+
+- name: Setup DNS updater - Transfer dnsupdater script
+  action: copy src={{ ansible_dir }}/config/{{ common_env }}/base/scripts/dnsupdater53 dest=/opt/scripts/dnsupdater53 mode=0755
+
+- name: Setup DNS updater - Set trigger for boot time
+  action: file src=/usr/sbin/dnsupdater53 dest=/etc/dhcp/dhclient-exit-hooks.d/dnsupdater53 state=link
+
+- name: Setup DNS updater - Update internal DNS
+  action: command /opt/scripts/dnsupdater53
+  only_if: {{ hostname_status.changed }}
+
+- name: Setup MOTD - Transfer motd-generator script
+  action: copy src={{ ansible_dir }}/config/{{ common_env }}/base/scripts/motd-generator dest=/opt/scripts/motd-generator owner=root group=root mode=0755
+  register: motd_status
+
+- name: Setup MOTD
+  action: command /opt/scripts/motd-generator
+  only_if: {{ motd_status.changed }}
