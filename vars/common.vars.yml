@@ -1,0 +1,7 @@
+---
+ansibledir: /opt/local/adjutant-provisioning
+ansibledir_vars: {{ ansibledir }}/vars
+ansibledir_modules: {{ ansibledir }}/modules
+ansibledir_conf: {{ ansibledir }}/config
+ansibledir_env_conf: {{ ansibledir_conf }}/{{ env }}
+ansibledir_common_conf: {{ ansibledir_conf }}/common

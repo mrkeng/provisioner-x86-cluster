@@ -1,8 +1,8 @@
 - name: Ensure /etc/apt/sources.list is correct
-  action: copy src={{ ansible_dir }}/config/{{ common_env }}/base/apt/sources.list dest=/etc/apt/sources.list owner=root group=root mode=0644
+  action: copy src={{ ansibledir_common_conf }}/base/apt/sources.list dest=/etc/apt/sources.list owner=root group=root mode=0644
 
 - name: Ensure /etc/apt/apt.conf
-  action: copy src={{ ansible_dir }}/config/{{ common_env }}/base/apt/apt.conf dest=/etc/apt/apt.conf owner=root group=root mode=0644
+  action: copy src={{ ansibledir_common_conf }}/base/apt/apt.conf dest=/etc/apt/apt.conf owner=root group=root mode=0644
 
 - name: Install basic system tools
   action: apt pkg={{ item }} update_cache=yes state=latest

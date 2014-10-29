@@ -1,0 +1,25 @@
+- name: Ensure /etc/hosts is correct
+  action: template src={{ ansibledir_common_conf }}/base/network/hosts dest=/etc/hosts owner=root group=root mode=644
+
+- name: Ensure /etc/resolv.conf is correct
+  action: copy src={{ ansibledir_common_conf }}/base/network/resolv.conf dest=/etc/resolv.conf owner=root group=root mode=644
+
+- name: Setup DNS updater - Install dependencies
+  action: apt pkg={{ item }} update_cache=yes state=latest
+  with_items:
+    - python-pip
+    - ec2-api-tools
+    - build-essential
+
+- name: Setup DNS updater - Install cli53
+  action: pip name=cli53 state=latest
+
+- name: Setup DNS updater - Transfer dnsupdater script
+  action: copy src={{ ansibledir_common_conf }}/base/scripts/dnsupdater53 dest={{ remotedir_backend_scripts }}/dnsupdater53 mode=0755
+
+- name: Setup DNS updater - Set trigger for boot time
+  action: file src={{ remotedir_backend_scripts }}/dnsupdater53 dest=/etc/dhcp/dhclient-exit-hooks.d/dnsupdater53 state=link
+
+- name: Setup DNS updater - Update internal DNS
+  action: command {{ remotedir_backend_scripts }}/dnsupdater53
+  only_if: {{ hostname_status.changed }}

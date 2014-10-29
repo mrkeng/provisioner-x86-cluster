@@ -1,0 +1,14 @@
+- name: Ensure directory {{ remotedir_backend_pkgs }} exists
+  action: file state=directory owner={{ role_bot }} group={{ role_bot }} mode=0755 path={{ remotedir_backend_pkgs }}
+
+- name: Ensure directory {{ remotedir_backend_etc }} exists
+  action: file state=directory owner={{ role_bot }} group={{ role_bot }} mode=0755 path={{ remotedir_backend_etc }}
+
+- name: Ensure directory {{ remotedir_backend_log }} exists
+  action: file state=directory owner={{ role_bot }} group={{ role_bot }} mode=0770 path={{ remotedir_backend_log }}
+
+- name: Ensure directory {{ remotedir_backend_src }} exists
+  action: file state=directory owner={{ role_bot }} group={{ role_bot }} mode=0777 path={{ remotedir_backend_src }}
+
+- name: Ensure directory {{ remotedir_backend_scripts }} exists
+  action: file state=directory owner={{ role_bot }} group={{ role_bot }} mode=0755 path={{ remotedir_backend_scripts }}

@@ -1,0 +1,11 @@
+---
+remotedir_backend_scripts: /opt/scripts
+remotedir_backend_pkgs: /opt/local
+remotedir_backend_etc: /etc/opt
+remotedir_backend_src: /tmp/src
+remotedir_backend_log: /var/log/swarm
+remotedir_backend_api: /srv/api
+
+role_ai: adjutant
+role_bot: operator
+role_human: devops
