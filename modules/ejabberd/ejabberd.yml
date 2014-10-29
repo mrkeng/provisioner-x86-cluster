@@ -1,0 +1,28 @@
+- name: Install eJabberd - Git checkout
+  action: git repo={{ ejabberd_git }} dest={{ remotedir_backend_src }}/ejabberd version={{ ejabberd_version }}
+  register: ejabberd_version_status
+
+- name: Install eJabberd - Configure script
+  action: >
+     command {{ remotedir_backend_src }}/ejabberd/src/configure --prefix={{ remotedir_backend_pkgs }}/ejabberd --enable-odbc --enable-user=ejabberd
+     chdir={{ remotedir_backend_src }}/ejabberd/src/
+     creates={{ remotedir_backend_src }}/ejabberd/src/Makefile
+  only_if: {{ ejabberd_version_status.changed }}
+
+- name: Install eJabberd - Compile & Install
+  action: command make install chdir={{ remotedir_backend_src }}/ejabberd/src/
+  only_if: {{ ejabberd_version_status.changed }}
+  notify:
+    - restart ejabberd
+
+- name: Install eJabberd - Symlink /etc/init.d/ejabberd
+  action: file src={{ remotedir_backend_src }}/ejabberd/src/ejabberd.init dest=/etc/init.d/ejabberd state=link
+
+- name: Install eJabberd - Configuration
+  action: copy src={{ ansibledir_env_conf }}/ejabberd/{{ item }} dest={{ remotedir_backend_pkgs }}/ejabberd/etc/ejabberd/{{ item }} owner=ejabberd group=ejabberd mode=0600
+  with_items:
+    - ejabberd.cfg
+    - ejabberdctl.cfg
+    - ejabberd.pem
+  notify:
+    - restart ejabberd

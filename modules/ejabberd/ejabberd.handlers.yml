@@ -1,0 +1,2 @@
+- name: restart ejabberd
+  action: service name=ejabberd state=restarted pattern=ejabberd
