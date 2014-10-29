@@ -1,0 +1,50 @@
+- name: Check version trigger for nginx
+  action: copy src={{ ansibledir_vars }}/nginx.vars.yml dest={{ remotedir_backend_pkgs }}/nginx/ owner={{ role_bot }} group={{ role_bot }} mode=0644
+  register: version_trigger
+
+- name: Install nginx - Fetch source code
+  action: command wget {{ nginx_url }} chdir={{ remotedir_backend_src }}/
+  when: version_trigger|changed
+
+- name: Install nginx - Untar source code
+  action: command tar -xzf {{ remotedir_backend_src }}/{{ nginx_filename }} chdir={{ remotedir_backend_src }}/
+  when: version_trigger|changed
+
+- name: Install nginx - Ensure directory {{ remotedir_backend_pkgs }}/nginx/{{ nginx_dir }} exists
+  action: file state=directory owner={{ role_bot }} group={{ role_bot }} mode=0755 path={{ remotedir_backend_pkgs }}/nginx/{{ nginx_dir }}
+
+- name: Install nginx - Configure
+  action: command {{ remotedir_backend_pkgs }}/{{ nginx_dir_src }}/configure 
+                  --prefix={{ remotedir_backend_pkgs }}/nginx/{{ nginx_dir }}/
+                  --conf-path={{ remotedir_backend_etc }}/nginx/nginx.conf
+                  --http-log-path={{ remotedir_backend_log }}/nginx/nginx.access.log
+                  --error-log-path={{ remotedir_backend_log }}/nginx/nginx.error.log
+                  --pid-path=/var/run/nginx.pid
+                  --user={{ role_bot }} --group={{ role_bot }}
+          chdir={{ remotedir_backend_src }}/{{ nginx_dir_src }}/
+  when: version_trigger|changed
+
+- name: Install nginx - Make
+  action: command make chdir={{ remotedir_backend_src }}/{{ nginx_dir_src }}/
+  when: version_trigger|changed
+
+- name: Install nginx - Make install
+  action: command make install chdir={{ remotedir_backend_src }}/{{ nginx_dir_src }}/
+  when: version_trigger|changed
+
+- name: Install nginx - Set chown
+  action: command chown -R {{ role_bot }}:{{ role_bot }} {{ remotedir_backend_pkgs }}/nginx
+  when: version_trigger|changed
+
+- name: Install nginx - Symlink current
+  action: file src={{ remotedir_backend_pkgs }}/nginx/{{ nginx_dir }} dest={{ remotedir_backend_pkgs }}/nginx/current state=link
+  when: version_trigger|changed
+  notify: restart nginx
+
+- name: Transfer nginx.conf
+  action: copy src={{ ansibledir_env_conf }}/nginx/nginx.conf dest={{ remotedir_backend_etc }}/nginx/nginx.conf owner={{ role_bot }} group={{ role_bot }} mode=0644
+  notify: reload nginx
+
+- name: Transfer conf.d
+  action: copy src={{ ansibledir_env_conf }}/nginx/conf.d dest={{ remotedir_backend_etc }}/nginx/ owner={{ role_bot }} group={{ role_bot }} mode=0644
+  notify: reload nginx
