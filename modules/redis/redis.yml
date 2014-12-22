@@ -5,33 +5,27 @@
     - redis/db
 
 - name: Transfer the new-version trigger for redis
-  action: copy src={{ ansibledir_env_conf }}/vars/redis.vars.yml dest=/opt/local/redis/ owner=devops group=klamr mode=0644 
-  register: new_version_trigger
+  action: copy src={{ ansibledir_env_conf }}/vars/redis.vars.yml dest={{ remotedir_backend_pkgs }}/redis/ owner={{ role_bot }} group={{ role_bot }} mode=0644 
+  register: version_trigger
 
 - name: Install redis - Fetch source code
-  action: command wget ${redis_url} chdir=/tmp/
+  action: command wget {{ redis_url }} chdir={{ remotedir_backend_src }}
 
 - name: Install redis - Untar source code
-  action: command tar -xzf /tmp/redis-${redis_version}.tar.gz -C /opt/local/redis
-  only_if: ${new_version_trigger.changed}
+  action: command tar -xzf {{ remotedir_backend_src }}/redis-{{ redis_version }}.tar.gz -C {{ remotedir_backend_pkgs }}/redis
+  when: version_trigger|changed
 
 - name: Install redis - Symlink to current
-  action: file src=/opt/local/redis/redis-${redis_version} dest=/opt/local/redis/current state=link
-  only_if: ${new_version_trigger.changed}
+  action: file src={{ remotedir_backend_pkgs }}/redis/redis-{{ redis_version }} dest={{ remotedir_backend_pkgs }}/redis/current state=link
+  when: version_trigger|changed
 
 - name: Install redis -Compile
-  action: command make chdir=/opt/local/redis/current/
-  only_if: ${new_version_trigger.changed}
+  action: command make chdir={{ remotedir_backend_pkgs }}/redis/current/
+  when: version_trigger|changed
 
 - name: Ensure redis configurations are correct
-  action: copy src=${ansible_dir}/config/${klamr_env}/redis/${item} dest=/opt/local/redis/current/ owner=root group=root mode=0644 
+  action: copy src={{ ansibledir_env_conf }}/redis/{{ item }} dest={{ remotedir_backend_pkgs }}/redis/current/ owner=root group=root mode=0644 
   with_items:
     - redis.0.conf
     - redis.1.conf
-    - redis.2.conf
-    - redis.3.conf
-    - redis.4.conf
-    - redis.5.conf
-    - redis.6.conf
-    - redis.7.conf
-  only_if: ${new_version_trigger.changed}
+  when: version_trigger|changed
