@@ -1,0 +1,15 @@
+- name: update supervisor
+  action: command supervisorctl update
+
+- name: restart supervisord redis
+  action: command supervisorctl restart {{ item }}
+  with_items:
+    - redis0
+    - redis1
+
+- name: restart supervisord nodejs
+  action: command supervisorctl restart nodejs
+
+- name: restart supervisord tarantool
+  action: command supervisorctl restart tarantool
+

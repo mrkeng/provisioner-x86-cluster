@@ -1,0 +1,7 @@
+- name: Install supervisor
+  action: apt pkg=supervisor update_cache=yes state=latest
+
+- name: Ensure supervisor configuration is correct
+  action: copy src={{ ansibledir_env_conf }}/supervisor/supervisord.conf dest=/etc/supervisor/supervisord.conf owner=root group=root mode=0644
+  notify:
+     - update supervisor

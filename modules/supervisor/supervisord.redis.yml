@@ -1,0 +1,7 @@
+- name: Ensure supervisor configuration for Redis is correct
+  action: copy src={{ ansibledir_env_conf }}/supervisor/conf.d/{{item} dest=/etc/supervisor/conf.d/ owner=root group=root mode=0644
+  with_items:
+    - redis.0.conf
+    - redis.1.conf
+  notify:
+     - update supervisor

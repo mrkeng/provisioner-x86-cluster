@@ -1,0 +1,6 @@
+- name: Ensure supervisor configuration for Nodejs is correct
+  action: copy src={{ ansibledir_env_conf }}/supervisor/conf.d/{{item}} dest=/etc/supervisor/conf.d/ owner=root group=root mode=0644
+  with_items:
+    - nodejs.conf
+  notify:
+     - update supervisor
