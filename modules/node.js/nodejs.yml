@@ -1,0 +1,30 @@
+- name: Ensure node.js directory exists
+  action: file state=directory owner={{ role_bot }} group={{ role_bot }} mode=0755 path={{ remotedir_backend_pkgs }}/node
+
+- name: Transfer the new-version trigger for node.js
+  action: copy src=${ansible_dir}/vars/nodejs.vars.yml dest={{ remotedir_backend_pkgs }}/nodejs/ owner={{ role_bot }} group={{ role_bot }} mode=0644 
+  register: version_trigger
+
+- name: Install node.js - Fetch source code
+  action: command wget ${nodejs_url} -O {{ remotedir_backend_src }}/node-${nodejs_version}.tar.gz
+  when: version_trigger|changed
+
+- name: Install node.js - Untar source code
+  action: command tar -xzf {{ remotedir_backend_src }}/node-${nodejs_version}.tar.gz -C {{ remotedir_backend_pkgs }}/nodejs
+  when: version_trigger|changed
+
+- name: Install node.js - Symlink to current
+  action: file src={{ remotedir_backend_pkgs }}/nodejs/node-${nodejs_version} dest={{ remotedir_backend_pkgs }}/nodejs/current state=link
+  when: version_trigger|changed
+
+- name: Install node.js - Configure script
+  action: command {{ remotedir_backend_pkgs }}/nodejs/current/configure chdir={{ remotedir_backend_pkgs }}/nodejs/current/
+  when: version_trigger|changed
+
+- name: Install node.js - Compile
+  action: command make chdir={{ remotedir_backend_pkgs }}/nodejs/current/
+  when: version_trigger|changed
+
+- name: Install node.js - Install
+  action: command make install chdir={{ remotedir_backend_pkgs }}/nodejs/current/
+  when: version_trigger|changed

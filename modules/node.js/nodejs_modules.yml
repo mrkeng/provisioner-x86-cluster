@@ -1,0 +1,14 @@
+- name: Ensure directory {{ remotedir_backend_pkgs }}/nodejs/node_modules directory exists
+  action: file state=directory owner={{ role_bot }} group={{ role_bot }} mode=0755 path={{ remotedir_backend_pkgs }}/nodejs/node_modules
+
+- name: Install node.js modules - pg
+  action: command npm install -g pg
+
+- name: Install node.js modules - knox
+  action: command npm install knox chdir={{ remotedir_backend_pkgs }}/node/
+
+- name: Install node.js modules - gm
+  action: command npm install gm chdir={{ remotedir_backend_pkgs }}/node/
+
+- name: Install node.js modules - memcached
+  action: command npm install git://github.com/3rd-Eden/node-memcached.git chdir={{ remotedir_backend_pkgs }}/node/
