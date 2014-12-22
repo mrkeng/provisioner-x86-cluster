@@ -1,0 +1,49 @@
+- name: Install Tarantool dependencies - PIP
+  action: pip name={{ item }}
+  with_items:
+    - pexpect
+    - daemon
+
+- name: Install Tarantool dependencies - APT
+  action: apt pkg={{ item }} update_cache=yes state=latest
+  with_items:
+    - cmake
+    - libreadline6
+    - libreadline6-dev
+
+- name: Ensure Tarantool directories exists
+  action: file state=directory owner={{ role_bot }} group={{ role_bot }} mode=0755 path={{ remotedir_backend_pkgs }}/{{ item }}
+  with_items:
+    - tarantool
+    - tarantool/{{ tarantool_version }}
+
+- name: Transfer the new-version trigger for Tarantool
+  action: copy src={{ ansibledir_vars }}/tarantool.vars.yml dest={{ remotedir_backend_pkgs }}/tarantool/ owner={{ role_bot }} group={{ role_bot }} mode=0644
+  register: version_trigger
+
+- name: Install Tarantool - Fetch source code
+  action: command wget {{ tarantool_url }} -O {{ remotedir_backend_src }}/{{ tarantool_version }}.tar.gz
+  when: version_trigger|changed
+
+- name: Install Tarantool - Untar source code
+  action: command tar -xzf {{ remotedir_backend_src }}/{{ tarantool_version }}.tar.gz -C {{ remotedir_backend_src }}/tarantool
+  when: version_trigger|changed
+
+- name: Install Tarantool - Symlink to current
+  action: file src={{ remotedir_backend_pkgs }}/tarantool/{{ tarantool_version }} dest={{ remotedir_backend_pkgs }}/tarantool/current state=link
+  when: version_trigger|changed
+
+- name: Install Tarantool - cmake
+  action: command chdir={{ remotedir_backend_src }}/tarantool/{{ tarantool_version }} cmake . -DCMAKE_INSTALL_PREFIX={{ remotedir_backend_pkgs }}/tarantool/{{ tarantool_version }}/ -DCMAKE_BUILD_TYPE=RelWithDebugInfo -DENABLE_CLIENT=true
+  when: version_trigger|changed
+
+- name: Install Tarantool - make
+  action: command chdir={{ remotedir_backend_src }}/tarantool/{{ tarantool_version }} make
+  when: version_trigger|changed
+
+- name: Install Tarantool - make install
+  action: command chdir={{ remotedir_backend_src }}/tarantool/{{ tarantool_version }} make install
+  when: version_trigger|changed
+
+- name: Ensure Tarantool configurations are correct
+  action: copy src={{ ansibledir_env_conf }}/tarantool/tarantool.cfg dest={{ remotedir_backend_pkgs }}/tarantool/{{ tarantool_version }}/ owner={{ role_bot }} group={{ role_bot }} mode=0644
